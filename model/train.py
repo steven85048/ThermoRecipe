@@ -7,3 +7,5 @@ import re
 
 con = sqlite3.connect("./database.sqlite")
 df = pd.read_sql_query("SELECT * FROM Reviews;", con)
+
+print(df.head())

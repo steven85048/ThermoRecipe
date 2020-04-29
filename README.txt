@@ -1,4 +1,4 @@
- Development Setup: [Ubuntu]
+ Development Setup: [Ubuntu through WSL]
 
  - Install Node.js (14.x) [https://github.com/nodesource/distributions/blob/master/README.md]
     - `curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -`
@@ -17,7 +17,7 @@ Build Setup:
 
 [ While docker daemon is running ]
 - In the thermorecipe/app folder:
-- `docker build -t <username>/<image-name>`
+    - `docker build -t <username>/<image-name>`
 - Test that the image exists with the most recent version: `docker images`
 - Run the docker image: `docker run -d -p 3333:3000 <username>/<image-name>:latest`
 - Test the docker image running locally: `localhost:3333` ( image has port 3000 within the container, but is forwarded to globally accessible port 3333 )
