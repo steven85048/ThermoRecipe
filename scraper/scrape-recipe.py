@@ -33,7 +33,15 @@ class RecipeScrape:
             curr_review = self.driver.find_elements_by_class_name("ReviewText")[0]
             self.reviews.append(curr_review.text)
 
+            # Modal element selecting behaves strangely in selenium so we use the document functions instead which works better
             self.driver.execute_script("document.getElementById('BI_loadReview3_right').click()")
+
+    def scrape_ingredients(self):
+        ingredient_elements = self.driver.find_elements_by_css_selector(".recipe-ingred_txt.added")
+
+        self.ingredients = []
+        for ingredient_element in ingredient_elements:
+            self.ingredients.append(ingredient_element.text)
 
     def _get_current_review_number(self):
         footer = self.driver.find_elements_by_css_selector(".footer.noselect")[0]
@@ -61,4 +69,4 @@ class RecipeScrape:
 
 if __name__ == '__main__':
     scraper = RecipeScrape("https://www.allrecipes.com/recipe/221079/chef-johns-crab-cakes/")
-    scraper.scrape()
+    scraper.scrape_ingredients()
