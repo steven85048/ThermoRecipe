@@ -15,6 +15,7 @@ class RecipeScrape:
         self.scrape_title()
         self.scrape_description()
         self.scrape_ingredients()
+        self.scrape_directions()
         self.scrape_reviews()
 
     def scrape_title(self):
@@ -61,6 +62,13 @@ class RecipeScrape:
         for ingredient_element in ingredient_elements:
             self.ingredients.append(ingredient_element.text)
 
+    def scrape_directions(self):
+        self.directions = []
+
+        directions_elements = self.driver.find_elements_by_class_name("recipe-directions__list--item")
+        for direction_element in directions_elements:
+            self.directions.append(direction_element.text)
+
     def _get_current_review_number(self):
         footer = self.driver.find_elements_by_css_selector(".footer.noselect")[0]
         rev_count_element = footer.find_elements_by_class_name("ng-binding")[0]
@@ -87,4 +95,4 @@ class RecipeScrape:
 
 if __name__ == '__main__':
     scraper = RecipeScrape("https://www.allrecipes.com/recipe/221079/chef-johns-crab-cakes/")
-    scraper.scrape_reviews()
+    scraper.scrape_directions()
