@@ -12,8 +12,13 @@ class RecipeScrape:
         self.driver.get(self.recipe_link)
 
     def scrape(self):
+        self.scrape_title()
         self.scrape_description()
+        self.scrape_ingredients()
         self.scrape_reviews()
+
+    def scrape_title(self):
+        self.title = self.driver.find_elements_by_class_name("recipe-summary__h1")[0].text
 
     def scrape_description(self):
         self.description_text = self.driver.find_elements_by_class_name("submitter__description")[0].text
@@ -30,8 +35,21 @@ class RecipeScrape:
             WAIT_RETRIES = 20
             self._wait_until_func_changes_to_val( self._get_current_review_number, rev_num, WAIT_RETRIES )
 
-            curr_review = self.driver.find_elements_by_class_name("ReviewText")[0]
-            self.reviews.append(curr_review.text)
+            review_store = {}
+
+            curr_review_description = self.driver.find_elements_by_class_name("ReviewText")[0]
+            review_store["description"] = curr_review_description.text
+
+            rating_element = self.driver.find_elements_by_class_name("rating")[0]
+            review_store["date"] = rating_element.text
+            
+            rating_stars = rating_element.get_attribute('innerHTML')
+            review_store["stars"] = len(re.findall("full-star", rating_stars))/2
+
+            review_store["helpful"] = int(self.driver.find_elements_by_css_selector(".helpful-count.reviewCount")[0].text)
+
+            print(review_store)
+            self.reviews.append(review_store)
 
             # Modal element selecting behaves strangely in selenium so we use the document functions instead which works better
             self.driver.execute_script("document.getElementById('BI_loadReview3_right').click()")
@@ -69,4 +87,4 @@ class RecipeScrape:
 
 if __name__ == '__main__':
     scraper = RecipeScrape("https://www.allrecipes.com/recipe/221079/chef-johns-crab-cakes/")
-    scraper.scrape_ingredients()
+    scraper.scrape_reviews()
