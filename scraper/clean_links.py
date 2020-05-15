@@ -9,10 +9,10 @@ from scraper.recipe_model import RecipeLinks
 import logging
 import re
 
-#logging.basicConfig()
-#logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
-engine = create_engine('sqlite:///./recipe-links-sqlite.db')
+engine = create_engine('sqlite:///./scraper/recipe-links-sqlite.db')
 
 Base = declarative_base()
 
@@ -23,10 +23,14 @@ class RecipeLinks(Base):
     link = Column(String(5000), nullable=False, unique=True)
 
 Base.metadata.bind = engine
+Base.metadata.create_all()
+
 db_session = sessionmaker(bind=engine) 
 session = db_session()
 
-res = session.query(RecipeLinks)
+res = session.query(RecipeLinks).all()
+print("The links are {}".format(res))
+
 for row in res:
     filtered_link = re.sub("(photos|reviews|print|fullrecipenutrition).*", "", row.link) 
     if(filtered_link != row.link):
