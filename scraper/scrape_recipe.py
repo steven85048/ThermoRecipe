@@ -1,15 +1,22 @@
 from selenium.webdriver import Chrome
+from selenium import webdriver
 
 import re
 import time
 import traceback
 
 WEBDRIVER_FILE = "scraper/chromedriver.exe"
+IS_HEADLESS_BROWSER = True
 
 class RecipeScrape:
     def __init__(self, recipe_link):
         self.recipe_link = recipe_link
-        self.driver = Chrome(WEBDRIVER_FILE)
+
+        options = webdriver.ChromeOptions()
+        if IS_HEADLESS_BROWSER:
+            options.add_argument('--headless')
+
+        self.driver = Chrome(WEBDRIVER_FILE, chrome_options=options)
 
     def scrape(self):
         self.driver.get(self.recipe_link)
@@ -30,6 +37,7 @@ class RecipeScrape:
 
     def scrape_title(self):
         self.title = self._get_title()
+        print(self.title)
 
     def scrape_description(self):
         self.description_text = self.driver.find_elements_by_class_name("recipe-summary")[0].text
