@@ -48,6 +48,12 @@ class Reviews(Base):
     helpful = Column(Integer)
     description = Column(String(1000))
 
+class RecipeLinks(Base):
+    __tablename__ = 'recipe_links'
+
+    id = Column(Integer, primary_key=True)
+    link = Column(String(5000), nullable=False, unique=True)
+
 def create_all(engine):
     Base.metadata.create_all(engine)
 

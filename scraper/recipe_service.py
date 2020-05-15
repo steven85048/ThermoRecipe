@@ -8,9 +8,13 @@ from sqlalchemy.orm import sessionmaker
 
 import logging
 
+SHOULD_LOG_QUERIES = False
+
 class RecipeService:
     def __init__(self):
-        pass
+        if(SHOULD_LOG_QUERIES):
+            logging.basicConfig()
+            logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
     def store_recipe(self, recipe_link, session):
         self.scraper = RecipeScrape(recipe_link)

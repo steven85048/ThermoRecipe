@@ -10,9 +10,10 @@ class RecipeScrape:
     def __init__(self, recipe_link):
         self.recipe_link = recipe_link
         self.driver = Chrome(WEBDRIVER_FILE)
-        self.driver.get(self.recipe_link)
 
     def scrape(self):
+        self.driver.get(self.recipe_link)
+
         self._wait_until_func_changes_to_val(self._get_title, "", lambda a,b : a != b, 10)
 
         self.scrape_title()
@@ -20,6 +21,8 @@ class RecipeScrape:
         self.scrape_ingredients()
         self.scrape_directions()
         self.scrape_reviews()
+
+        self.driver.close()
 
     # Used for validation of page loaded
     def _get_title(self):
@@ -104,4 +107,4 @@ class RecipeScrape:
 
 if __name__ == '__main__':
     scraper = RecipeScrape("https://www.allrecipes.com/recipe/228542/roasted-vegetables-with-spaghetti-squash/")
-    scraper.scrape_title()
+    scraper.scrape()

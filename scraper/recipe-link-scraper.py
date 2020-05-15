@@ -6,8 +6,8 @@ from sqlite3 import Error, IntegrityError
 
 CRAWL_WRITE_FILE = 'recipe-links-sqlite.db'
 BASE_LINK = 'https://www.allrecipes.com'
-ROUTE_LINK_INITIAL = '/recipes/78/breakfast-and-brunch/'
-CRAWL_MAX = 5000
+ROUTE_LINK_INITIAL = ''
+CRAWL_MAX = 1000000000
 
 class SqliteManager:
 	def __init__(self, sqlite_file):
@@ -32,8 +32,8 @@ class SqliteManager:
 
 	def _create_links_table(self):
 		sql_create_links_table = """ CREATE TABLE IF NOT EXISTS recipe_links (
-										id INTEGER PRIMARY KEY AUTOINCREMENT,
-										link CHAR(500) NOT NULL UNIQUE
+										id INTEGER PRIMARY KEY,
+										link VARCHAR(1000) NOT NULL UNIQUE
 								); """
 	
 		self._execute_query( sql_create_links_table )
