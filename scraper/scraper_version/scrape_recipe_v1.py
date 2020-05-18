@@ -1,44 +1,26 @@
-from scraper.scraper_version.scraper_exceptions import RecipeInformationNotLoadedException
+from scraper.scraper_version.scrape_recipe_intf import ScrapeRecipeInterface
+from scraper.scraper_version.scraper_utils import wait_until_comparison_valid
+from scraper.scraper_version.scrape_recipe import MAX_REVIEW_SCRAPE_PER_RECIPE
 
 from selenium.webdriver import Chrome
 from selenium import webdriver
+
 import re
-import time
-import traceback
 
-WEBDRIVER_FILE = "scraper/chromedriver.exe"
-IS_HEADLESS_BROWSER = False
-MAX_REVIEW_SCRAPE_PER_RECIPE = 5
+class ScrapeRecipeV1(ScrapeRecipeInterface):
+    def __init__(self):
+        pass
 
-class RecipeScrape:
-    def __init__(self, recipe_link):
-        self.recipe_link = recipe_link
+    def scrape(self, driver):
+        self.driver = driver
 
-        options = webdriver.ChromeOptions()
-        if IS_HEADLESS_BROWSER:
-            options.add_argument('--headless')
+        wait_until_comparison_valid(self._get_title, "", lambda a,b : a != b, 10)
 
-        self.driver = Chrome(WEBDRIVER_FILE, chrome_options=options)
-
-    def scrape(self):
-        try: 
-            self.driver.get(self.recipe_link)
-
-            self._wait_until_func_changes_to_val(self._get_title, "", lambda a,b : a != b, 5)
-
-            self.scrape_title()
-            self.scrape_description()
-            self.scrape_ingredients()
-            self.scrape_directions()
-            self.scrape_reviews()
-        except Exception:
-            raise
-        finally:
-            self.driver.close()
-
-    # Used for validation of page loaded
-    def _get_title(self):
-        return self.driver.find_elements_by_css_selector(".headline-wrapper")[0].text
+        self.scrape_title()
+        self.scrape_description()
+        self.scrape_ingredients()
+        self.scrape_directions()
+        self.scrape_reviews()
 
     def scrape_title(self):
         self.title = self._get_title()
@@ -49,8 +31,6 @@ class RecipeScrape:
 
     def scrape_reviews(self):
         review_count_element = self.driver.find_elements_by_css_selector(".ugc-reviews-link")[1]        
-        
-        print(review_count_element.text)
         num_reviews = int(re.findall("\d+", review_count_element.text)[0])
 
         review_count_element.click()
@@ -62,7 +42,7 @@ class RecipeScrape:
             
             # Verification/wait to handle angular loading
             WAIT_RETRIES = 20
-            self._wait_until_func_changes_to_val( self._get_current_review_number, rev_num, lambda a, b : a == b, WAIT_RETRIES )
+            wait_until_comparison_valid( self._get_current_review_number, rev_num, lambda a, b : a == b, WAIT_RETRIES )
 
             review_store = {}
 
@@ -100,29 +80,20 @@ class RecipeScrape:
         for direction_element in directions_elements:
             self.directions.append(direction_element.text)
 
+    # Used for validation of page loaded
+    def _get_title(self):
+        return self.driver.find_elements_by_css_selector(".headline-wrapper")[0].text
+
     def _get_current_review_number(self):
         index_element = self.driver.find_elements_by_css_selector(".review-index")[0]
         return index_element.text
 
-    def _wait_until_func_changes_to_val(self, func, val, comparison, max_retries, curr_retries = 0):
-        RETRY_RATE = .5 # in seconds
-
-        if(curr_retries >= max_retries):
-            raise RecipeInformationNotLoadedException("Error in HTML state: value of element did not change to {}".format(str(val)))
-        curr_retries += 1
-
-        time.sleep(RETRY_RATE)
-
-        try:
-            func_val = func()
-            if( comparison(func_val, str(val))):
-                return
-        except Exception as err:
-            # we prioritize retries since errors are most likely due to timing
-            pass
-
-        self._wait_until_func_changes_to_val(func, val, comparison, max_retries, curr_retries)
-
 if __name__ == '__main__':
-    scraper = RecipeScrape("https://www.allrecipes.com/recipe/143432/black-bean-huevos-rancheros/")
-    scraper.scrape()
+    options = webdriver.ChromeOptions()
+    #options.add_argument('--headless')
+
+    driver = Chrome("scraper/chromedriver.exe", chrome_options=options)
+    driver.get("https://www.allrecipes.com/recipe/143432/black-bean-huevos-rancheros/")
+
+    scraper = ScrapeRecipeV1()
+    scraper.scrape(driver)
