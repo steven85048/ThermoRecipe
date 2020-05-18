@@ -1,12 +1,14 @@
+from scraper.scraper_version.scraper_exceptions import RecipeInformationNotLoadedException
+
 from selenium.webdriver import Chrome
 from selenium import webdriver
-
 import re
 import time
 import traceback
 
 WEBDRIVER_FILE = "scraper/chromedriver.exe"
 IS_HEADLESS_BROWSER = True
+MAX_REVIEW_SCRAPE_PER_RECIPE = 5
 
 class RecipeScrape:
     def __init__(self, recipe_link):
@@ -19,17 +21,20 @@ class RecipeScrape:
         self.driver = Chrome(WEBDRIVER_FILE, chrome_options=options)
 
     def scrape(self):
-        self.driver.get(self.recipe_link)
+        try: 
+            self.driver.get(self.recipe_link)
 
-        self._wait_until_func_changes_to_val(self._get_title, "", lambda a,b : a != b, 10)
+            self._wait_until_func_changes_to_val(self._get_title, "", lambda a,b : a != b, 5)
 
-        self.scrape_title()
-        self.scrape_description()
-        self.scrape_ingredients()
-        self.scrape_directions()
-        self.scrape_reviews()
-
-        self.driver.close()
+            self.scrape_title()
+            self.scrape_description()
+            self.scrape_ingredients()
+            self.scrape_directions()
+            self.scrape_reviews()
+        except Exception:
+            raise
+        finally:
+            self.driver.close()
 
     # Used for validation of page loaded
     def _get_title(self):
@@ -50,6 +55,9 @@ class RecipeScrape:
 
         self.reviews = []
         for rev_num in range(1, num_reviews + 1):
+            if len(self.reviews) >= MAX_REVIEW_SCRAPE_PER_RECIPE:
+                break
+            
             # Verification/wait to handle angular loading
             WAIT_RETRIES = 20
             self._wait_until_func_changes_to_val( self._get_current_review_number, rev_num, lambda a, b : a == b, WAIT_RETRIES )
@@ -98,7 +106,7 @@ class RecipeScrape:
         RETRY_RATE = .5 # in seconds
 
         if(curr_retries >= max_retries):
-            raise Exception("Error in HTML state: value of element did not change to {}".format(str(val)))
+            raise RecipeInformationNotLoadedException("Error in HTML state: value of element did not change to {}".format(str(val)))
         curr_retries += 1
 
         time.sleep(RETRY_RATE)
@@ -109,9 +117,9 @@ class RecipeScrape:
                 return
         except Exception as err:
             # we prioritize retries since errors are most likely due to timing
-            traceback.print_exc()
- 
-        self._wait_until_func_changes_to_val(func, val, max_retries, curr_retries)
+            pass
+
+        self._wait_until_func_changes_to_val(func, val, comparison, max_retries, curr_retries)
 
 if __name__ == '__main__':
     scraper = RecipeScrape("https://www.allrecipes.com/recipe/228542/roasted-vegetables-with-spaghetti-squash/")

@@ -1,0 +1,2 @@
+class RecipeInformationNotLoadedException(Exception):
+    pass

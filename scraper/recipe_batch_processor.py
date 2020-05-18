@@ -1,4 +1,5 @@
 import threading
+import traceback
 
 from scraper.recipe_model import Base, RecipeLinks, create_all
 from scraper.recipe_service import RecipeService
@@ -6,7 +7,7 @@ from scraper.recipe_service import RecipeService
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
-MAX_THREAD_COUNT = 2
+MAX_THREAD_COUNT = 1
 BASE_URL = "https://www.allrecipes.com"
 
 class RecipeBatchProcessor:
@@ -23,8 +24,6 @@ class RecipeBatchProcessor:
         self.db_session = sessionmaker(bind=self.engine)
 
         create_all( self.engine )
-
-        self.recipe_service = RecipeService()
 
     def scrape_on_threads(self):
         self.reset()
@@ -56,6 +55,7 @@ class RecipeBatchProcessor:
 
     def scrape_and_store_recipe_on_thread(self, cv):
         session = self.db_session()
+        recipe_service = RecipeService()
 
         while not self.scraping_done:
             curr_url = None
@@ -71,8 +71,12 @@ class RecipeBatchProcessor:
             print("Processing url: {}".format(curr_url))
 
             if not self.scraping_done:
-                self.recipe_service.store_recipe(curr_url, session)
-        
+                try:
+                    recipe_service.store_recipe(curr_url, session)
+                except Exception as err:
+                    print("Scraping on URL {} failed: {}".format(curr_url, str(err)))    
+                    traceback.print_exc()
+
         session.close()
 
 if __name__ == '__main__':

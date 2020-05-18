@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from scraper.recipe_model import Base, Ingredients, Recipe, Reviews, Directions, create_all, drop_all
-from scraper.scrape_recipe import RecipeScrape
+from scraper.scraper_version.scrape_recipe import RecipeScrape
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
