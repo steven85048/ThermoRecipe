@@ -1,14 +1,16 @@
-from selenium.webdriver import Chrome
-
 from scraper.scraper_version.scraper_utils import wait_until_comparison_valid
 from scraper.scraper_version.scrape_recipe import MAX_REVIEW_SCRAPE_PER_RECIPE
+
+from selenium.webdriver import Chrome
+from selenium.webdriver import Chrome
+from selenium import webdriver
 
 import re
 import time
 
 class ScrapeRecipeV2:
-    def __init__(self, driver):
-        self.driver = driver
+    def __init__(self):
+        pass
 
     def scrape(self, driver):
         self.driver = driver
@@ -23,6 +25,7 @@ class ScrapeRecipeV2:
 
     def scrape_title(self):
         self.title = self._get_title()
+        print(self.title)
 
     def scrape_description(self):
         self.description_text = self.driver.find_elements_by_class_name("submitter__description")[0].text
@@ -82,6 +85,9 @@ class ScrapeRecipeV2:
 if __name__ == '__main__':
     options = webdriver.ChromeOptions()
     #options.add_argument('--headless')
+
+    prefs = {"profile.managed_default_content_settings.images": 2}
+    options.add_experimental_option("prefs", prefs)
 
     driver = Chrome("scraper/chromedriver.exe", chrome_options=options)
     driver.get("https://www.allrecipes.com/recipe/221079/chef-johns-crab-cakes/")

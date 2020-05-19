@@ -90,7 +90,7 @@ class ScrapeRecipeV1(ScrapeRecipeInterface):
 
 if __name__ == '__main__':
     options = webdriver.ChromeOptions()
-    #options.add_argument('--headless')
+    options.add_argument('--headless')
 
     driver = Chrome("scraper/chromedriver.exe", chrome_options=options)
     driver.get("https://www.allrecipes.com/recipe/143432/black-bean-huevos-rancheros/")

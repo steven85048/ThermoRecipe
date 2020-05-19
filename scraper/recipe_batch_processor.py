@@ -7,7 +7,7 @@ from scraper.recipe_service import RecipeService
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
-MAX_THREAD_COUNT = 1
+MAX_THREAD_COUNT = 5
 BASE_URL = "https://www.allrecipes.com"
 
 class RecipeBatchProcessor:
