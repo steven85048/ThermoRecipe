@@ -1,5 +1,4 @@
 from scraper.scraper_version.scraper_utils import wait_until_comparison_valid
-from scraper.scraper_version.scrape_recipe import MAX_REVIEW_SCRAPE_PER_RECIPE
 
 from selenium.webdriver import Chrome
 from selenium.webdriver import Chrome
@@ -9,8 +8,8 @@ import re
 import time
 
 class ScrapeRecipeV2:
-    def __init__(self):
-        pass
+    def __init__(self, max_review_scrapes):
+        self.max_review_scrapes = max_review_scrapes
 
     def scrape(self, driver):
         self.driver = driver
@@ -38,6 +37,9 @@ class ScrapeRecipeV2:
 
         self.reviews = []
         for rev_num in range(1, num_reviews + 1):
+            if( len(self.reviews) > self.max_review_scrapes ):
+                break
+
             # Verification/wait to handle angular loading
             WAIT_RETRIES = 10
             wait_until_comparison_valid( self._get_current_review_number, rev_num, lambda a, b : a == b, WAIT_RETRIES )
@@ -88,6 +90,8 @@ if __name__ == '__main__':
 
     prefs = {"profile.managed_default_content_settings.images": 2}
     options.add_experimental_option("prefs", prefs)
+
+    options.add_argument("--disable-popup-blocking")
 
     driver = Chrome("scraper/chromedriver.exe", chrome_options=options)
     driver.get("https://www.allrecipes.com/recipe/221079/chef-johns-crab-cakes/")

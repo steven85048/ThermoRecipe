@@ -1,6 +1,5 @@
 from scraper.scraper_version.scrape_recipe_intf import ScrapeRecipeInterface
 from scraper.scraper_version.scraper_utils import wait_until_comparison_valid
-from scraper.scraper_version.scrape_recipe import MAX_REVIEW_SCRAPE_PER_RECIPE
 
 from selenium.webdriver import Chrome
 from selenium import webdriver
@@ -8,8 +7,8 @@ from selenium import webdriver
 import re
 
 class ScrapeRecipeV1(ScrapeRecipeInterface):
-    def __init__(self):
-        pass
+    def __init__(self, max_review_scrapes):
+        self.max_review_scrapes = max_review_scrapes
 
     def scrape(self, driver):
         self.driver = driver
@@ -37,7 +36,7 @@ class ScrapeRecipeV1(ScrapeRecipeInterface):
 
         self.reviews = []
         for rev_num in range(1, num_reviews + 1):
-            if len(self.reviews) >= MAX_REVIEW_SCRAPE_PER_RECIPE:
+            if len(self.reviews) >= self.max_review_scrapes:
                 break
             
             # Verification/wait to handle angular loading
