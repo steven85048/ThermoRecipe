@@ -24,7 +24,6 @@ class ScrapeRecipeV2:
 
     def scrape_title(self):
         self.title = self._get_title()
-        print(self.title)
 
     def scrape_description(self):
         self.description_text = self.driver.find_elements_by_class_name("submitter__description")[0].text

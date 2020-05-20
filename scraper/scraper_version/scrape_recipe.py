@@ -9,8 +9,8 @@ import time
 import traceback
 
 WEBDRIVER_FILE = "scraper/chromedriver.exe"
-IS_HEADLESS_BROWSER = False
-MAX_REVIEW_SCRAPE_PER_RECIPE = 5
+IS_HEADLESS_BROWSER = True
+MAX_REVIEW_SCRAPE_PER_RECIPE = 1
 
 class RecipeScrape:
     def __init__(self, recipe_link):
@@ -19,6 +19,11 @@ class RecipeScrape:
         options = webdriver.ChromeOptions()
         if IS_HEADLESS_BROWSER:
             options.add_argument('--headless')
+
+        prefs = {"profile.managed_default_content_settings.images": 2}
+        options.add_experimental_option("prefs", prefs)
+
+        options.add_argument("--disable-popup-blocking")
 
         self.driver = Chrome(WEBDRIVER_FILE, chrome_options=options)
 
@@ -43,6 +48,6 @@ class RecipeScrape:
 
 
 if __name__ == '__main__':
-    #scraper = RecipeScrape("https://www.allrecipes.com/recipe/143432/black-bean-huevos-rancheros/")
-    scraper = RecipeScrape("https://www.allrecipes.com/recipe/221079/chef-johns-crab-cakes/")
+    scraper = RecipeScrape("https://www.allrecipes.com/recipe/143432/black-bean-huevos-rancheros/")
+    #scraper = RecipeScrape("https://www.allrecipes.com/recipe/221079/chef-johns-crab-cakes/")
     scraper.scrape()
