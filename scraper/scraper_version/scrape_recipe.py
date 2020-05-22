@@ -23,6 +23,12 @@ class RecipeScrape:
         prefs = {"profile.managed_default_content_settings.images": 2}
         options.add_experimental_option("prefs", prefs)
 
+        options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+        #options.add_argument("start-maximized")                                                                                options.add_argument("enable-automation")
+        options.add_argument("--disable-infobars")
+        options.add_argument("--disable-dev-shm-usage")
+
         options.add_argument("--disable-popup-blocking")
 
         self.driver = Chrome(WEBDRIVER_FILE, chrome_options=options)
