@@ -10,6 +10,8 @@ import traceback
 
 WEBDRIVER_FILE = "scraper/chromedriver.exe"
 IS_HEADLESS_BROWSER = True
+# On the ec2 environment, the chromedriver is set as part of the path
+IS_LOCAL_CHROMEDRIVER = False
 MAX_REVIEW_SCRAPE_PER_RECIPE = 1
 
 class RecipeScrape:
@@ -31,7 +33,10 @@ class RecipeScrape:
 
         options.add_argument("--disable-popup-blocking")
 
-        self.driver = Chrome(WEBDRIVER_FILE, chrome_options=options)
+        if IS_LOCAL_CHROMEDRIVER:
+            self.driver = Chrome(WEBDRIVER_FILE, options=options)
+        else:
+            self.driver = Chrome(options=options)
 
     def scrape(self):
         try: 
