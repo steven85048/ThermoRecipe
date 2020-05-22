@@ -3,11 +3,12 @@ import traceback
 
 from scraper.recipe_model import Base, RecipeLinks, create_all
 from scraper.recipe_service import RecipeService
+from scraper.scraper_version.scraper_exceptions import InstanceIPBlacklistedException
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
-MAX_THREAD_COUNT = 5
+MAX_THREAD_COUNT = 2
 BASE_URL = "https://www.allrecipes.com"
 
 class RecipeBatchProcessor:
@@ -73,6 +74,8 @@ class RecipeBatchProcessor:
             if not self.scraping_done:
                 try:
                     recipe_service.store_recipe(curr_url, session)
+                except InstanceIPBlacklistedException as err:
+                    print("We have been blacklisted; time to restart!!")
                 except Exception as err:
                     print("Scraping on URL {} failed: {}".format(curr_url, str(err)))    
                     traceback.print_exc()

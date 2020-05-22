@@ -1,4 +1,4 @@
-from scraper.scraper_version.scraper_exceptions import RecipeInformationNotLoadedException
+from scraper.scraper_version.scraper_exceptions import RecipeInformationNotLoadedException, InstanceIPBlacklistedException
 from scraper.scraper_version.scrape_recipe_v1 import ScrapeRecipeV1
 from scraper.scraper_version.scrape_recipe_v2 import ScrapeRecipeV2
 
@@ -41,6 +41,10 @@ class RecipeScrape:
     def scrape(self):
         try: 
             self.driver.get(self.recipe_link)
+
+            if( "<body></body>" in self.driver.page_source ):
+                raise InstanceIPBlacklistedException()
+
             self.determine_scrape_version()
             self.scrape_version.scrape(self.driver)
         except Exception:
