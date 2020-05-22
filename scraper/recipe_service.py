@@ -28,7 +28,7 @@ class RecipeService:
         session.commit()
 
     def _store_recipe(self, session):
-        new_recipe = Recipe(title=self.scraper.title, recipe_note=self.scraper.description_text, url=self.scraper.recipe_link)
+        new_recipe = Recipe(title=self.scraper.scrape_version.title, recipe_note=self.scraper.scrape_version.description_text, url=self.scraper.recipe_link)
         session.add(new_recipe)
 
         # Need to flush session changes to get the ID of the recipe for foreign key purposes
@@ -36,20 +36,20 @@ class RecipeService:
         return new_recipe
 
     def _store_ingredients(self, session, recipe):
-        for ingredient in self.scraper.ingredients:
+        for ingredient in self.scraper.scrape_version.ingredients:
             new_ingredient = Ingredients(recipe=recipe, 
                                          ingredient=ingredient)
             session.add(new_ingredient)
 
     def _store_directions(self, session, recipe):
-        for index, direction in enumerate(self.scraper.directions):
+        for index, direction in enumerate(self.scraper.scrape_version.directions):
             new_direction = Directions( recipe=recipe, 
                                         order=index, 
                                         direction=direction)
             session.add(new_direction)
 
     def _store_reviews(self, session, recipe):
-        storeable_reviews = [self._to_storeable_review(r, recipe) for r in self.scraper.reviews]
+        storeable_reviews = [self._to_storeable_review(r, recipe) for r in self.scraper.scrape_version.reviews]
         for review in storeable_reviews:
             session.add(review)
 
