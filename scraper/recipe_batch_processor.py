@@ -4,6 +4,7 @@ import traceback
 from scraper.recipe_model import Base, RecipeLinks, create_all
 from scraper.recipe_service import RecipeService
 from scraper.scraper_version.scraper_exceptions import InstanceIPBlacklistedException
+from scraper.aws.invoke_lambda import invoke_abort_lambda
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -18,6 +19,9 @@ class RecipeBatchProcessor:
     def reset(self):
         self.thread_url = None
         self.scraping_done = False
+
+        self.lambda_restart_lock = threading.RLock()
+        self.has_been_restarted = False
 
     def init_engine(self, engine_url):
         self.engine = create_engine(engine_url)
@@ -76,6 +80,16 @@ class RecipeBatchProcessor:
                     recipe_service.store_recipe(curr_url, session)
                 except InstanceIPBlacklistedException as err:
                     print("We have been blacklisted; time to restart!!")
+
+                    # we don't want to send more than one lambda restart call
+                    with self.lambda_restart_lock:
+                        if( self.has_been_restarted ):
+                            session.close()
+                            return
+
+                        self.has_been_restarted = True
+                        invoke_abort_lambda()
+                        
                 except Exception as err:
                     print("Scraping on URL {} failed: {}".format(curr_url, str(err)))    
                     traceback.print_exc()
