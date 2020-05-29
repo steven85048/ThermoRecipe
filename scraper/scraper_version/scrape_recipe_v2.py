@@ -54,7 +54,7 @@ class ScrapeRecipeV2:
             rating_stars = rating_element.get_attribute('innerHTML')
             review_store["stars"] = len(re.findall("full-star", rating_stars))/2
 
-            review_store["helpful"] = int(self.driver.find_elements_by_css_selector(".helpful-count.reviewCount")[0].text)
+            review_store["helpful"] = int(self.driver.find_elements_by_css_selector(".helpful-count.reviewCount")[0].text.replace("k", "000"))
 
             self.reviews.append(review_store)
 

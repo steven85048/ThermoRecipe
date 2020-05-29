@@ -54,7 +54,7 @@ class ScrapeRecipeV1(ScrapeRecipeInterface):
             
             try:
                 helpful = active_review_element.find_elements_by_css_selector(".recipe-review-helpful-count")[0].text
-                review_store["helpful"] = int(re.sub('[^0-9]','', helpful))
+                review_store["helpful"] = int(re.sub('[^0-9]','', helpful.replace("k", "000")))
             except IndexError:
                 review_store["helpful"] = 0
 
