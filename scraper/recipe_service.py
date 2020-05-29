@@ -53,8 +53,17 @@ class RecipeService:
             session.add(review)
 
     def _to_storeable_review(self, review, recipe):
+        
+        parsed_date = None
+        date_formats = ["%B %d, %Y", "%m/%d/%Y"]
+        for date_format in date_formats:
+            try:
+                parsed_date = datetime.strptime(review["date"], date_format)
+            except Exception as err:
+                pass
+
         new_review = Reviews(recipe=recipe, 
-                            date=datetime.strptime(review["date"], "%m/%d/%Y"), 
+                            date=parsed_date, 
                             stars=review['stars'], 
                             description=review["description"][:REVIEW_MAX_LEN], 
                             helpful=review["helpful"])
