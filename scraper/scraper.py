@@ -3,6 +3,8 @@ import sys
 
 from scraper.recipe_batch_processor import RecipeBatchProcessor
 
+# NOTE: The RDS_SCRAPER_URL environment variable should be set in ~/.profile before running this script
+# It should contain the psql database URL to the RDS database
 def scrape_with_rds():
     try:
         connection_url = os.environ["RDS_SCRAPER_URL"]
