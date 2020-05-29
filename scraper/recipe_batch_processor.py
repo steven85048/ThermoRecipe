@@ -60,13 +60,15 @@ class RecipeBatchProcessor:
                 self.thread_link_data = link_data
                 cv.notify_all()
 
-        self.scraping_done = True
-        cv.notify_all()
+        with cv:
+            self.scraping_done = True
+            cv.notify_all()
 
         for thread in active_threads:
             thread.join()
 
         if( self.needs_restart ):
+            print("Reseting instance. . .")
             invoke_abort_lambda()
 
     def scrape_and_store_recipe_on_thread(self, cv):
@@ -96,9 +98,9 @@ class RecipeBatchProcessor:
 
                     session.commit()
                 except InstanceIPBlacklistedException as err:
-                    print("We have been blacklisted; time to restart!!")
-                    self.needs_restart = True
-                    cv.notify_all()
+                    with cv:
+                        self.needs_restart = True
+                        cv.notify_all()
                         
                 except Exception as err:
                     print("Scraping on URL {} failed: {}".format(link_data["curr_link"], str(err)))    
