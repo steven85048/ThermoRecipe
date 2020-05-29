@@ -5,13 +5,18 @@ import datetime
 
 Base = declarative_base()
 
+RECIPE_NOTE_MAX_LEN = 1000
+INGREDIENT_MAX_LEN = 150
+DIRECTION_MAX_LEN = 350
+REVIEW_MAX_LEN = 3000
+
 class Recipe(Base):
     __tablename__ = 'recipes'
 
     id = Column(Integer, primary_key=True)
 
     title = Column(String(250))
-    recipe_note = Column(String(1000))
+    recipe_note = Column(String(RECIPE_NOTE_MAX_LEN))
     url = Column(String(100))
 
 class Ingredients(Base):
@@ -22,7 +27,7 @@ class Ingredients(Base):
     recipe_id = Column(Integer, ForeignKey('recipes.id'), nullable=False)
     recipe = relationship(Recipe, foreign_keys=[recipe_id])
     
-    ingredient = Column(String(150), nullable=False)
+    ingredient = Column(String(INGREDIENT_MAX_LEN), nullable=False)
 
 class Directions(Base):
     __tablename__ = 'directions'
@@ -33,7 +38,7 @@ class Directions(Base):
     recipe = relationship(Recipe, foreign_keys=[recipe_id])
     
     order = Column(Integer, nullable = False)
-    direction = Column(String(350), nullable = False)
+    direction = Column(String(DIRECTION_MAX_LEN), nullable = False)
 
 class Reviews(Base):
     __tablename__ = 'reviews'
@@ -46,13 +51,13 @@ class Reviews(Base):
     date = Column(DateTime, default=datetime.datetime.utcnow)
     stars = Column(Integer)
     helpful = Column(Integer)
-    description = Column(String(1000))
+    description = Column(String(3000))
 
 class RecipeLinks(Base):
     __tablename__ = 'recipe_links'
 
     id = Column(Integer, primary_key=True)
-    link = Column(String(5000), nullable=False, unique=True)
+    link = Column(String(REVIEW_MAX_LEN), nullable=False, unique=True)
     has_been_parsed = Column(Integer)
 
 def create_all(engine):

@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from scraper.recipe_model import Base, Ingredients, Recipe, Reviews, Directions, create_all, drop_all
+from scraper.recipe_model import RECIPE_NOTE_MAX_LEN, INGREDIENT_MAX_LEN, DIRECTION_MAX_LEN, REVIEW_MAX_LEN
 from scraper.scraper_version.scrape_recipe import RecipeScrape
 
 from sqlalchemy import create_engine
@@ -25,10 +26,8 @@ class RecipeService:
         self._store_directions(session, recipe)
         self._store_reviews(session, recipe)
 
-        session.commit()
-
     def _store_recipe(self, session):
-        new_recipe = Recipe(title=self.scraper.scrape_version.title, recipe_note=self.scraper.scrape_version.description_text, url=self.scraper.recipe_link)
+        new_recipe = Recipe(title=self.scraper.scrape_version.title, recipe_note=self.scraper.scrape_version.description_text[:RECIPE_NOTE_MAX_LEN], url=self.scraper.recipe_link)
         session.add(new_recipe)
 
         # Need to flush session changes to get the ID of the recipe for foreign key purposes
@@ -38,14 +37,14 @@ class RecipeService:
     def _store_ingredients(self, session, recipe):
         for ingredient in self.scraper.scrape_version.ingredients:
             new_ingredient = Ingredients(recipe=recipe, 
-                                         ingredient=ingredient)
+                                         ingredient=ingredient[:INGREDIENT_MAX_LEN])
             session.add(new_ingredient)
 
     def _store_directions(self, session, recipe):
         for index, direction in enumerate(self.scraper.scrape_version.directions):
             new_direction = Directions( recipe=recipe, 
                                         order=index, 
-                                        direction=direction)
+                                        direction=direction[:DIRECTION_MAX_LEN])
             session.add(new_direction)
 
     def _store_reviews(self, session, recipe):
@@ -57,7 +56,7 @@ class RecipeService:
         new_review = Reviews(recipe=recipe, 
                             date=datetime.strptime(review["date"], "%m/%d/%Y"), 
                             stars=review['stars'], 
-                            description=review["description"], 
+                            description=review["description"][:REVIEW_MAX_LEN], 
                             helpful=review["helpful"])
         return new_review
 
