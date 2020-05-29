@@ -20,8 +20,7 @@ class RecipeBatchProcessor:
         self.thread_link_data = None
         self.scraping_done = False
 
-        self.lambda_restart_lock = threading.RLock()
-        self.has_been_restarted = False
+        self.needs_restart = False
 
     def init_engine(self, engine_url):
         self.engine = create_engine(engine_url)
@@ -52,14 +51,23 @@ class RecipeBatchProcessor:
             link_data["link_id"] = row.id
 
             with cv:
-                while self.thread_link_data != None:
+                while self.thread_link_data != None and not self.needs_restart:
                     cv.wait()
+
+                if self.needs_restart:
+                    break
 
                 self.thread_link_data = link_data
                 cv.notify_all()
 
         self.scraping_done = True
         cv.notify_all()
+
+        for thread in active_threads:
+            thread.join()
+
+        if( self.needs_restart ):
+            invoke_abort_lambda()
 
     def scrape_and_store_recipe_on_thread(self, cv):
         session = self.db_session()
@@ -89,15 +97,8 @@ class RecipeBatchProcessor:
                     session.commit()
                 except InstanceIPBlacklistedException as err:
                     print("We have been blacklisted; time to restart!!")
-
-                    # we don't want to send more than one lambda restart call
-                    with self.lambda_restart_lock:
-                        if( self.has_been_restarted ):
-                            session.close()
-                            return
-
-                        self.has_been_restarted = True
-                        invoke_abort_lambda()
+                    self.needs_restart = True
+                    cv.notify_all()
                         
                 except Exception as err:
                     print("Scraping on URL {} failed: {}".format(link_data["curr_link"], str(err)))    
