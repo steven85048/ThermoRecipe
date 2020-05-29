@@ -17,7 +17,7 @@ class RecipeBatchProcessor:
         pass
 
     def reset(self):
-        self.thread_url = None
+        self.thread_link_data = None
         self.scraping_done = False
 
         self.lambda_restart_lock = threading.RLock()
@@ -43,16 +43,19 @@ class RecipeBatchProcessor:
             thread.start()
 
         session = self.db_session()
-        links = session.query(RecipeLinks).all()
+        links = session.query(RecipeLinks).filter(RecipeLinks.has_been_parsed == 0)
 
         for row in links:
-            curr_link = BASE_URL + row.link
+            link_data = {}
+
+            link_data["curr_link"] = BASE_URL + row.link
+            link_data["link_id"] = row.id
 
             with cv:
-                while self.thread_url != None:
+                while self.thread_link_data != None:
                     cv.wait()
 
-                self.thread_url = curr_link
+                self.thread_link_data = link_data
                 cv.notify_all()
 
         self.scraping_done = True
@@ -63,21 +66,27 @@ class RecipeBatchProcessor:
         recipe_service = RecipeService()
 
         while not self.scraping_done:
-            curr_url = None
+            link_data = None
 
             with cv:
-                while self.thread_url == None and not self.scraping_done:
+                while self.thread_link_data == None and not self.scraping_done:
                     cv.wait()
 
-                curr_url = self.thread_url
-                self.thread_url = None
+                link_data = self.thread_link_data
+                self.thread_link_data = None
                 cv.notify_all()
 
-            print("Processing url: {}".format(curr_url))
+            print("Processing url: {}".format(link_data["curr_link"]))
 
             if not self.scraping_done:
                 try:
-                    recipe_service.store_recipe(curr_url, session)
+                    recipe_service.store_recipe(link_data["curr_link"], session)
+
+                    # Set this link as completed
+                    session.query(RecipeLinks).filter(RecipeLinks.id == link_data["link_id"])\
+                                              .update({RecipeLinks.has_been_parsed: 1})
+
+                    session.commit()
                 except InstanceIPBlacklistedException as err:
                     print("We have been blacklisted; time to restart!!")
 
@@ -91,8 +100,17 @@ class RecipeBatchProcessor:
                         invoke_abort_lambda()
                         
                 except Exception as err:
-                    print("Scraping on URL {} failed: {}".format(curr_url, str(err)))    
+                    print("Scraping on URL {} failed: {}".format(link_data["curr_link"], str(err)))    
                     traceback.print_exc()
+
+                    # Revert the data queries for this link
+                    session.rollback()
+
+                    # Set this link as an error state
+                    session.query(RecipeLinks).filter(RecipeLinks.id == link_data["link_id"])\
+                                              .update({RecipeLinks.has_been_parsed: -1})
+
+                    session.commit()
 
         session.close()
 

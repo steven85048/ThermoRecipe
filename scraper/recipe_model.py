@@ -53,6 +53,7 @@ class RecipeLinks(Base):
 
     id = Column(Integer, primary_key=True)
     link = Column(String(5000), nullable=False, unique=True)
+    has_been_parsed = Column(Integer)
 
 def create_all(engine):
     Base.metadata.create_all(engine)
