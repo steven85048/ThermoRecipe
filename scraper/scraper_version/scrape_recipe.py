@@ -12,7 +12,7 @@ WEBDRIVER_FILE = "scraper/chromedriver.exe"
 IS_HEADLESS_BROWSER = True
 # On the ec2 environment, the chromedriver is set as part of the path
 IS_LOCAL_CHROMEDRIVER = False
-MAX_REVIEW_SCRAPE_PER_RECIPE = 1
+MAX_REVIEW_SCRAPE_PER_RECIPE = 400
 
 class RecipeScrape:
     def __init__(self, recipe_link):
