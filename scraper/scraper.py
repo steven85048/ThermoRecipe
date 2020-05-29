@@ -17,3 +17,5 @@ def scrape_with_sqlite():
     batch_processor = RecipeBatchProcessor()
     batch_processor.init_engine('sqlite:///./scraper/recipe-links-sqlite.db')
     batch_processor.scrape_on_threads()
+
+scrape_with_rds()
