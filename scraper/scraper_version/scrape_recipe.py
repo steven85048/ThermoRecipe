@@ -41,6 +41,7 @@ class RecipeScrape:
     def scrape(self):
         try: 
             self.driver.get(self.recipe_link)
+            print("URL opened: {}".format(self.recipe_link))
 
             if( "<body></body>" in self.driver.page_source ):
                 raise InstanceIPBlacklistedException()

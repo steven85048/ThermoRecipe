@@ -36,6 +36,8 @@ class ScrapeRecipeV2:
 
         self.reviews = []
         for rev_num in range(1, num_reviews + 1):
+            print("Finished review # {}: {}".format(rev_num, self.title))
+
             if( len(self.reviews) > self.max_review_scrapes ):
                 break
 
