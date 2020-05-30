@@ -39,7 +39,7 @@ class ScrapeRecipeV1(ScrapeRecipeInterface):
                 break
             
             # Verification/wait to handle angular loading
-            WAIT_RETRIES = 20
+            WAIT_RETRIES = 5
             wait_until_comparison_valid( self._get_current_review_number, rev_num, lambda a, b : a == b, WAIT_RETRIES )
 
             review_store = {}

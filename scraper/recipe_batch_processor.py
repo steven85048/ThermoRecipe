@@ -9,7 +9,7 @@ from scraper.aws.invoke_lambda import invoke_abort_lambda
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
-MAX_THREAD_COUNT = 2
+MAX_THREAD_COUNT = 5
 BASE_URL = "https://www.allrecipes.com"
 
 class RecipeBatchProcessor:

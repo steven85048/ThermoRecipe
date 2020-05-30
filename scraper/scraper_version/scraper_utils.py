@@ -4,7 +4,7 @@ import time
 
 # Having self is strange in a utility function here, but we just use it to pass into our func as convenience
 def wait_until_comparison_valid(func, val, comparison, max_retries, curr_retries = 0):
-    RETRY_RATE = .5 # in seconds
+    RETRY_RATE = .1 # in seconds
 
     if(curr_retries >= max_retries):
         raise RecipeInformationNotLoadedException("Error in HTML state: value of element did not change to {}".format(str(val)))
