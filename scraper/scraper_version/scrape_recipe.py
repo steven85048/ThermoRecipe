@@ -51,7 +51,7 @@ class RecipeScrape:
         except Exception:
             raise
         finally:
-            self.driver.close()
+            self.driver.quit()
 
     def determine_scrape_version(self):
         # We use some random indicator on the page to determine, but may not be entirely robust; may want to find some other indicator later
