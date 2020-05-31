@@ -1,29 +1,25 @@
+from scraper.scraper_version.scrape_recipe_intf import ScrapeRecipeInterface
+from scraper.scraper_version.scraper_utils import wait_until_comparison_valid
+
 from selenium.webdriver import Chrome
+from selenium import webdriver
 
 import re
-import time
-import traceback
 
-WEBDRIVER_FILE = "scraper/chromedriver.exe"
+class ScrapeRecipeV1(ScrapeRecipeInterface):
+    def __init__(self, max_review_scrapes):
+        self.max_review_scrapes = max_review_scrapes
 
-class RecipeScrape:
-    def __init__(self, recipe_link):
-        self.recipe_link = recipe_link
-        self.driver = Chrome(WEBDRIVER_FILE)
-        self.driver.get(self.recipe_link)
+    def scrape(self, driver):
+        self.driver = driver
 
-    def scrape(self):
-        self._wait_until_func_changes_to_val(self._get_title, "", lambda a,b : a != b, 10)
+        wait_until_comparison_valid(self._get_title, "", lambda a,b : a != b, 10)
 
         self.scrape_title()
         self.scrape_description()
         self.scrape_ingredients()
         self.scrape_directions()
         self.scrape_reviews()
-
-    # Used for validation of page loaded
-    def _get_title(self):
-        return self.driver.find_elements_by_css_selector(".headline-wrapper")[0].text
 
     def scrape_title(self):
         self.title = self._get_title()
@@ -39,9 +35,14 @@ class RecipeScrape:
 
         self.reviews = []
         for rev_num in range(1, num_reviews + 1):
+            print("Finished review # {}: {}".format(rev_num, self.title))
+
+            if len(self.reviews) >= self.max_review_scrapes:
+                break
+            
             # Verification/wait to handle angular loading
-            WAIT_RETRIES = 20
-            self._wait_until_func_changes_to_val( self._get_current_review_number, rev_num, lambda a, b : a == b, WAIT_RETRIES )
+            WAIT_RETRIES = 5
+            wait_until_comparison_valid( self._get_current_review_number, rev_num, lambda a, b : a == b, WAIT_RETRIES )
 
             review_store = {}
 
@@ -55,7 +56,7 @@ class RecipeScrape:
             
             try:
                 helpful = active_review_element.find_elements_by_css_selector(".recipe-review-helpful-count")[0].text
-                review_store["helpful"] = int(re.sub('[^0-9]','', helpful))
+                review_store["helpful"] = int(re.sub('[^0-9]','', helpful.replace("k", "000")))
             except IndexError:
                 review_store["helpful"] = 0
 
@@ -79,29 +80,20 @@ class RecipeScrape:
         for direction_element in directions_elements:
             self.directions.append(direction_element.text)
 
+    # Used for validation of page loaded
+    def _get_title(self):
+        return self.driver.find_elements_by_css_selector(".headline-wrapper")[0].text
+
     def _get_current_review_number(self):
         index_element = self.driver.find_elements_by_css_selector(".review-index")[0]
         return index_element.text
 
-    def _wait_until_func_changes_to_val(self, func, val, comparison, max_retries, curr_retries = 0):
-        RETRY_RATE = .5 # in seconds
-
-        if(curr_retries >= max_retries):
-            raise Exception("Error in HTML state: value of element did not change to {}".format(str(val)))
-        curr_retries += 1
-
-        time.sleep(RETRY_RATE)
-
-        try:
-            func_val = func()
-            if( comparison(func_val, str(val))):
-                return
-        except Exception as err:
-            # we prioritize retries since errors are most likely due to timing
-            traceback.print_exc()
- 
-        self._wait_until_func_changes_to_val(func, val, max_retries, curr_retries)
-
 if __name__ == '__main__':
-    scraper = RecipeScrape("https://www.allrecipes.com/recipe/228542/roasted-vegetables-with-spaghetti-squash/")
-    scraper.scrape_title()
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+
+    driver = Chrome("scraper/chromedriver.exe", chrome_options=options)
+    driver.get("https://www.allrecipes.com/recipe/143432/black-bean-huevos-rancheros/")
+
+    scraper = ScrapeRecipeV1()
+    scraper.scrape(driver)
