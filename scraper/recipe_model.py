@@ -51,7 +51,7 @@ class Reviews(Base):
     date = Column(DateTime, default=datetime.datetime.utcnow)
     stars = Column(Integer)
     helpful = Column(Integer)
-    description = Column(String(3000))
+    description = Column(String(REVIEW_MAX_LEN))
 
 class RecipeLinks(Base):
     __tablename__ = 'recipe_links'
