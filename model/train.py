@@ -1,11 +1,5 @@
-import sqlite3
-import pandas as pd
-import numpy as np
-import nltk
-import string
-import re
+from nltk.tokenize import sent_tokenize
 
-con = sqlite3.connect("./database.sqlite")
-df = pd.read_sql_query("SELECT * FROM Reviews;", con)
+from model.load import load_from_subset_pickle
 
-print(df.head())
+df = load_from_subset_pickle()
